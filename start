@@ -1,0 +1,4 @@
+#!/bin/bash
+
+docker rm firebase-docker
+docker run --name firebase-docker -it -p 9005:9005 -v $PWD:/app firebase /bin/sh
