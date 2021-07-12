@@ -67,6 +67,32 @@ export const getMonthlyArchive = async (created_at: string): Promise<null | Reco
 };
 
 /**
+ * 全てのブログの月別アーカイブ情報の取得
+ * @return {unknown}
+ */
+export const getMonthlyArchives = async (): Promise<Record<string, number>[]> => {
+  try {
+    const docRef = db.collection("blog").doc("archive");
+    const monthlyRef = docRef.collection("monthly");
+    const snapshot = await monthlyRef.get();
+    if (snapshot.empty) {
+      return [];
+    }
+    const arr: Record<string, number>[] = [];
+    snapshot.forEach((doc) => {
+      if (doc.exists) {
+        arr.push({
+          [doc.id]: doc.data() as unknown as number,
+        });
+      }
+    });
+    return arr;
+  } catch (err) {
+    return [];
+  }
+};
+
+/**
  *ブログのタグ別アーカイブ情報の取得
  * @param {string} tag
  * @return {unknown}
@@ -74,7 +100,7 @@ export const getMonthlyArchive = async (created_at: string): Promise<null | Reco
 export const getTagArchive = async (tag: string): Promise<null | Record<string, number>> => {
   try {
     const archiveRef = db.collection("blog").doc("archive");
-    // 月別アーカイブ
+    // タグ別アーカイブ
     const tagRef = archiveRef.collection("tag").doc(tag);
     const doc = await tagRef.get();
     if (!doc.exists) {
@@ -84,6 +110,32 @@ export const getTagArchive = async (tag: string): Promise<null | Record<string, 
     }
   } catch (err) {
     return null;
+  }
+};
+
+/**
+ * 全てのブログの月別アーカイブ情報の取得
+ * @return {unknown}
+ */
+export const getTagArchives = async (): Promise<Record<string, number>[]> => {
+  try {
+    const docRef = db.collection("blog").doc("archive");
+    const tagRef = docRef.collection("tag");
+    const snapshot = await tagRef.get();
+    if (snapshot.empty) {
+      return [];
+    }
+    const arr: Record<string, number>[] = [];
+    snapshot.forEach((doc) => {
+      if (doc.exists) {
+        arr.push({
+          [doc.id]: doc.data() as unknown as number,
+        });
+      }
+    });
+    return arr;
+  } catch (err) {
+    return [];
   }
 };
 

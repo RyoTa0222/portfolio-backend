@@ -40,3 +40,4 @@ export interface BlogLgtm {
 
 export type BlogLgtmType = "good" | "bad"
 export type BlogLgtmAction = "increment" | "decrement"
+
