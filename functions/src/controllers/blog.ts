@@ -1,8 +1,8 @@
 import {Request, Response, NextFunction} from "express";
 import createClient from "../plugins/contentful";
-import {LGTM, LGTM_ACTION} from "../consts/config";
+import {LGTM, LGTM_ACTION, BLOG_HEADING_LIST} from "../consts/config";
 import {getBlogLgtm, putBlogLgtm, getMonthlyArchives, getTagArchives} from "../models/blog";
-import {BlogCategory, BlogContent} from "../types/interface";
+import {BlogCategory, BlogContent, BlogContentHeading, Author} from "../types/interface";
 import {DateTime} from "luxon";
 import r from "../utils/response";
 
@@ -101,7 +101,7 @@ const getBlog = async (req: Request, res: Response, next: NextFunction): Promise
 };
 
 /**
-  * ブログの設定の保存
+  * ブログのコンテンツ一覧の取得
   * @param {Request} req
   * @param {Response} res
   * @param {NextFunction} next
@@ -170,10 +170,104 @@ const getBlogContents = async (req: Request, res: Response, next: NextFunction):
     const data = {contents, page};
     r.success(res, data);
   } catch (err) {
-    next(Object.assign(err, {function: "getBlog"}));
+    next(Object.assign(err, {function: "getBlogContents"}));
     r.error500(res, err.message);
   }
 };
 
+/**
+  * ブログのコンテンツ詳細の取得
+  * @param {Request} req
+  * @param {Response} res
+  * @param {NextFunction} next
+  */
+const getBlogContent = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  const {id} = req.params;
+  // パラメータのチェック
+  if (!id) {
+    r.error400(res, "パラメータが不足しています");
+    return;
+  }
+  try {
+    // contentfulからデータ取得
+    const entries = await client.getEntries({
+      "content_type": "blog",
+      "fields.id": id,
+    });
+    if (entries.total < 1) {
+      r.error400(res, "記事が見つかりません");
+      return;
+    }
+    const item = entries.items[0];
+    const fields = item.fields as BlogContent;
+    // 記事データの整形
+    // 作成日
+    const created_at = DateTime.fromISO(item.sys.createdAt).toFormat("yyyy-MM-dd");
+    // 更新日
+    const updated_at = DateTime.fromISO(item.sys.updatedAt).toFormat("yyyy-MM-dd");
+    // 画像
+    const thumbnailId = fields.thumbnail.sys.id;
+    const imageObj = entries.includes.Asset.find((_asset: any) => _asset.sys.id === thumbnailId);
+    // タグ
+    const tagId = fields.category.sys.id;
+    const tagObj = entries.includes.Entry.find((_entry: any) => _entry.sys.id === tagId);
+    const tagFields = tagObj.fields as BlogCategory;
+    // 著者
+    const authorId = fields.author.sys.id;
+    const authorObj = entries.includes.Entry.find((_entry: any) => _entry.sys.id === authorId);
+    const authorFields = authorObj.fields as Author;
+    const authorImageId = authorFields.image.sys.id;
+    const authorImageObj = entries.includes.Asset.find((_asset: any) => _asset.sys.id === authorImageId);
+    // LGTMの取得
+    const lgtm = await getBlogLgtm(id);
+    const data = {
+      title: fields.title,
+      image: imageObj.fields.file.url,
+      created_at,
+      updated_at,
+      content: fields.body,
+      entry: entries.includes?.Entry ?? null,
+      asset: entries.includes?.Asset ?? null,
+      author: {
+        name: authorFields.name,
+        description: authorFields.description,
+        image: authorImageObj.fields.file.url,
+      },
+      lgtm,
+      index: getShapedBlogIndex((fields.body as {content: any[]}).content),
+      tag: {
+        label: tagFields.categoryName,
+        color: tagFields.color,
+        tag_id: tagFields.categoryId,
+        id: tagObj.sys.id,
+      },
+    };
+    r.success(res, data);
+  } catch (err) {
+    next(Object.assign(err, {function: "getBlogContent"}));
+    r.error500(res, err.message);
+  }
+};
+/**
+ * ブログの目次の生成
+ * @param {any[]} document
+ * @return {Record<string, string>}
+ */
+const getShapedBlogIndex = (document: any[]) => {
+  const arr: BlogContentHeading[] = document.filter((doc: any) => BLOG_HEADING_LIST.includes(doc.nodeType));
+  const res = arr.map((item) => (
+    {
+      label: item.content[0].value,
+      type: item.nodeType.slice(0, 1) + item.nodeType.slice(-1),
+    }
+  ));
+  return res;
+};
 
-export default {postBlogContentsLgtm, getBlogContentsLgtm, getBlog, getBlogContents};
+export default {
+  postBlogContentsLgtm,
+  getBlogContentsLgtm,
+  getBlog,
+  getBlogContents,
+  getBlogContent,
+};

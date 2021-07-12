@@ -34,6 +34,7 @@ app.get("/blog", blog.getBlog);
 app.get("/blog/contents", blog.getBlogContents);
 app.get("/blog/contents/lgtm", blog.getBlogContentsLgtm);
 app.post("/blog/contents/lgtm", blog.postBlogContentsLgtm);
+app.get("/blog/contents/:id", blog.getBlogContent);
 
 // webhook
 app.post("/contentful/lgtm", ctfWebhookCreateBlogEvent);
