@@ -19,7 +19,7 @@ export const ctfWebhookCreateBlogEvent = async (req: Request, res: Response, nex
   try {
     const {id} = req.body;
     await postBlogLgtm(id["en-US"]);
-    sendMessageToSlack("CONTENTFUL", {name: "200 Success", message: "Webhookを正常に実行しました"});
+    sendMessageToSlack("CONTENTFUL", {name: "200 Success", message: "Webhookを正常に実行しました\n 関数：ctfWebhookCreateBlogEvent"});
     r.success(res, "success");
   } catch (err) {
     next(Object.assign(err, {function: "ctfWebhookEventRouter"}));
@@ -59,7 +59,7 @@ export const ctfWebhookUpdateBlogEvent = async (req: Request, res: Response, nex
     const percent = await getBlogPercentageOfCategory(tag_id);
     // アーカイブ情報の更新
     await putBlogArchive(created_at, tag, monthly_count, tag_count, percent );
-    sendMessageToSlack("CONTENTFUL", {name: "200 Success", message: "Webhookを正常に実行しました"});
+    sendMessageToSlack("CONTENTFUL", {name: "200 Success", message: "Webhookを正常に実行しました\n ctfWebhookUpdateBlogEvent"});
     r.success(res, "success");
   } catch (err) {
     next(Object.assign(err, {function: "ctfWebhookEventRouter"}));

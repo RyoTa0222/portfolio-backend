@@ -59,5 +59,35 @@ export interface BlogContent {
             linkType: "Entry"
             id: string
         }
-      }
+    }
+    author: {
+        sys: {
+            type: "Link",
+            linkType: "Entry",
+            id: string
+        }
+    }
+}
+
+export interface Author {
+    name: string,
+    description: string,
+    image: {
+        sys: {
+            type: "Link",
+            linkType: "Asset",
+            id: string
+        }
+    }
+}
+
+export interface BlogContentHeading {
+    data: Record<string, unknown>,
+    content: {
+        data: Record<string, unknown>,
+        marks: [],
+        value: string,
+        nodeType: string
+    }[],
+    nodeType: string
 }
