@@ -14,22 +14,22 @@ export interface SlackNotification {
 export interface PortfolioWork {
     image: {
         sys: {
-            type: "Link",
-            linkType: "Asset",
+            type: "Link"
+            linkType: "Asset"
             id: string
         }
     },
     title: string,
-    description: string,
-    link: string,
-    github: string,
-    created_year: number,
+    description: string
+    link: string
+    github: string
+    created_year: number
 }
 
 export interface BlogCategory {
-    categoryName: string,
-    categoryId: string,
-    color: string,
+    categoryName: string
+    categoryId: string
+    color: string
     priority: number
 }
 
@@ -41,3 +41,23 @@ export interface BlogLgtm {
 export type BlogLgtmType = "good" | "bad"
 export type BlogLgtmAction = "increment" | "decrement"
 
+export interface BlogContent {
+    title: string
+    id: string
+    description: string
+    thumbnail: {
+        sys: {
+            type: "Link"
+            linkType: "Asset"
+            id: string
+        }
+    }
+    body: unknown
+    category: {
+        sys: {
+            type: "Link"
+            linkType: "Entry"
+            id: string
+        }
+      }
+}
