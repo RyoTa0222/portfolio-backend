@@ -10,7 +10,7 @@ import {SLACK_NOTIFICATION_TYPE, SLACK_NOTIFICATION} from "../types/interface";
   * @param {SLACK_NOTIFICATION_TYPE} type
   * @param {SLACK_NOTIFICATION} obj
   */
-export const sendMessageToSlack = async (type: SLACK_NOTIFICATION_TYPE, obj: SLACK_NOTIFICATION) => {
+export const sendMessageToSlack = async (type: SLACK_NOTIFICATION_TYPE, obj: SLACK_NOTIFICATION): Promise<void> => {
   const url = type === "SERVER" ? SLACK_SERVER_WEBHOOK_URL : SLACK_CONTENTFUL_WEBHOOK_URL;
   // slackにエラーを追加
   const webhook = new IncomingWebhook(url);

@@ -11,7 +11,7 @@ const client = createClient();
   * @param {Response} res
   * @param {NextFunction} next
   */
-const getPortfolioWorks = async (req: Request, res: Response, next: NextFunction) => {
+const getPortfolioWorks = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const {offset, limit} = req.query;
   // パラメータのチェック
   if (typeof offset !== "string") {
@@ -61,21 +61,51 @@ const getPortfolioWorks = async (req: Request, res: Response, next: NextFunction
   * @param {Response} res
   * @param {NextFunction} next
   */
-const getPortfolioShops = async (req: Request, res: Response, next: NextFunction) => {
+const getPortfolioShops = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const {offset, limit, shopType} = req.query;
-  console.log(offset, limit, shopType);
+  // パラメータのチェック
+  if (typeof offset !== "string") {
+    res.send({success: false, message: "パラメータが不足しています"});
+    return;
+  }
+  if (typeof limit !== "string") {
+    res.send({success: false, message: "パラメータが不足しています"});
+    return;
+  }
+  if (typeof shopType !== "string") {
+    res.send({success: false, message: "パラメータが不足しています"});
+    return;
+  }
   // contentful
-  res.json({
-    "data": [
-      {
-        "image": "string",
-        "title": "string",
-        "description": "string",
-        "link": "string",
-      },
-    ],
-    "success": true,
-  });
+  try {
+    // contentfulからデータ取得
+    const entries = await client.getEntries({
+      content_type: "portfolio",
+      order: "-fields.created_year",
+      limit,
+      skip: offset,
+      links_to_entry: PORTFOLIO_TYPE_WORK,
+    });
+    const items = entries.items;
+    const data = items.map((item) => {
+      const fields = item.fields as PortfolioWork;
+      const imageSysId = fields.image.sys.id;
+      const imageObj = entries.includes.Asset.find((_asset: any) => _asset.sys.id === imageSysId);
+      return {
+        image: imageObj?.fields?.file?.url ?? null,
+        title: fields.title,
+        description: fields.description,
+        link: fields.link ?? null,
+      };
+    });
+    res.json({
+      data,
+      success: true,
+    });
+  } catch (err) {
+    next(Object.assign(err, {function: "getPortfolioShops"}));
+    res.send({success: false, message: err.message});
+  }
 };
 
 export default {getPortfolioWorks, getPortfolioShops};

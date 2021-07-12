@@ -25,3 +25,10 @@ export interface PortfolioWork {
     github: string,
     created_year: number,
 }
+
+export interface BlogCategory {
+    categoryName: string,
+    categoryId: string,
+    color: string,
+    priority: number
+}
