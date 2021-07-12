@@ -5,6 +5,7 @@ import {ctfWebhookCreateBlogEvent, ctfWebhookUpdateBlogEvent} from "./controller
 import {sendMessageToSlack} from "./utils/sendToSlack";
 import portfolio from "./controllers/portfolio";
 import blog from "./controllers/blog";
+import r from "./utils/response";
 
 // Create Express server
 const app: express.Express = express();
@@ -23,7 +24,7 @@ app.use(express.urlencoded({
 app.use(cors());
 
 app.get("/", (req: Request, res: Response) => {
-  res.status(200).send("success");
+  r.success(res, "success");
 });
 // portfolio
 app.get("/portfolio/works", portfolio.getPortfolioWorks);

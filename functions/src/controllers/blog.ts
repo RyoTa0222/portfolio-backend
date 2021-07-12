@@ -3,6 +3,7 @@ import createClient from "../plugins/contentful";
 import {LGTM, LGTM_ACTION} from "../consts/config";
 import {getBlogLgtm, putBlogLgtm, getMonthlyArchives, getTagArchives} from "../models/blog";
 import {BlogCategory} from "../types/interface";
+import r from "../utils/response";
 
 const client = createClient();
 
@@ -16,20 +17,20 @@ const getBlogContentsLgtm = async (req: Request, res: Response, next: NextFuncti
   const {id} = req.query;
   // パラメータのチェック
   if (typeof id !== "string") {
-    res.send({success: false, message: "パラメータが不足しています"});
+    r.error400(res, "パラメータが不足しています");
     return;
   }
   try {
     const data = await getBlogLgtm(id);
     // データが取得できなかった場合はエラーで返す
     if (data === null) {
-      res.send({success: false, message: "データの取得に失敗しました"});
+      r.error400(res, "データの取得に失敗しました");
       return;
     }
-    res.send({success: true, data});
+    r.success(res, data);
   } catch (err) {
     next(Object.assign(err, {function: "getBlogContentsLgtm"}));
-    res.send({success: false, message: err.message});
+    r.error500(res, err.message);
   }
 };
 
@@ -42,29 +43,21 @@ const getBlogContentsLgtm = async (req: Request, res: Response, next: NextFuncti
 const postBlogContentsLgtm = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const {type, id, action} = req.body;
   // パラメータのチェック
-  if (typeof id !== "string") {
-    res.status(400).send({success: false, message: "パラメータが不足しています"});
-    return;
-  }
-  if ( !LGTM.includes(type) ) {
-    res.status(400).send({success: false, message: "パラメータが不足しています"});
-    return;
-  }
-  if ( !LGTM_ACTION.includes(action) ) {
-    res.status(400).send({success: false, message: "パラメータが不足しています"});
+  if (typeof id !== "string" || !LGTM.includes(type) || !LGTM_ACTION.includes(action)) {
+    r.error400(res, "パラメータが不足しています");
     return;
   }
   try {
     const value = action === "increment" ? 1 : -1;
     const response = await putBlogLgtm(id, type, value);
     if (response === null) {
-      res.send({success: false, message: "データの更新に失敗しました"});
+      r.error400(res, "データの更新に失敗しました");
       return;
     }
-    res.send({success: true});
+    r.success(res);
   } catch (err) {
     next(Object.assign(err, {function: "postBlogContentsLgtm"}));
-    res.status(400).send({success: false, message: err.message});
+    r.error500(res, err.message);
   }
 };
 
@@ -97,13 +90,11 @@ const getBlog = async (req: Request, res: Response, next: NextFunction): Promise
         };
       });
     }
-    res.send({
-      success: true,
-      data: {monthly_archives, tag_archives, tags},
-    });
+    const data = {monthly_archives, tag_archives, tags};
+    r.success(res, data);
   } catch (err) {
     next(Object.assign(err, {function: "getBlog"}));
-    res.status(400).send({success: false, message: err.message});
+    r.error500(res, err.message);
   }
 };
 
