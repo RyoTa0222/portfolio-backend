@@ -4,6 +4,8 @@ import cors from "cors";
 import {ctfWebhookCreateBlogEvent, ctfWebhookUpdateBlogEvent} from "./controllers/contentful";
 import {sendMessageToSlack} from "./utils/sendToSlack";
 import portfolio from "./controllers/portfolio";
+import blog from "./controllers/blog";
+import r from "./utils/response";
 
 // Create Express server
 const app: express.Express = express();
@@ -22,11 +24,17 @@ app.use(express.urlencoded({
 app.use(cors());
 
 app.get("/", (req: Request, res: Response) => {
-  res.status(200).send("success");
+  r.success(res, "success");
 });
 // portfolio
 app.get("/portfolio/works", portfolio.getPortfolioWorks);
 app.get("/portfolio/shops", portfolio.getPortfolioShops);
+// blog
+app.get("/blog", blog.getBlog);
+app.get("/blog/contents", blog.getBlogContents);
+app.get("/blog/contents/lgtm", blog.getBlogContentsLgtm);
+app.post("/blog/contents/lgtm", blog.postBlogContentsLgtm);
+app.get("/blog/contents/:id", blog.getBlogContent);
 
 // webhook
 app.post("/contentful/lgtm", ctfWebhookCreateBlogEvent);
