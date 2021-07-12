@@ -4,6 +4,7 @@ import {postBlogLgtm, putBlogArchive} from "../models/blog";
 import {sendMessageToSlack} from "../utils/sendToSlack";
 import {BlogCategory} from "../types/interface";
 import {DateTime} from "luxon";
+import r from "../utils/response";
 
 const client = createClient();
 
@@ -19,10 +20,10 @@ export const ctfWebhookCreateBlogEvent = async (req: Request, res: Response, nex
     const {id} = req.body;
     await postBlogLgtm(id["en-US"]);
     sendMessageToSlack("CONTENTFUL", {name: "200 Success", message: "Webhookを正常に実行しました"});
-    res.status(200).send("success");
+    r.success(res, "success");
   } catch (err) {
     next(Object.assign(err, {function: "ctfWebhookEventRouter"}));
-    res.status(500).send("error");
+    r.error500(res, "error");
   }
 };
 
@@ -47,7 +48,7 @@ export const ctfWebhookUpdateBlogEvent = async (req: Request, res: Response, nex
     // カテゴリIDが取得できなかった場合
     if (entries.total < 1) {
       sendMessageToSlack("CONTENTFUL", {name: "400 Error", message: "カテゴリが取得できませんでした"});
-      res.status(500).send("error");
+      r.error500(res, "error");
       return;
     }
     const tag = (entries.items.find((item) => item.sys.id === tag_id)?.fields as BlogCategory).categoryId;
@@ -59,10 +60,10 @@ export const ctfWebhookUpdateBlogEvent = async (req: Request, res: Response, nex
     // アーカイブ情報の更新
     await putBlogArchive(created_at, tag, monthly_count, tag_count, percent );
     sendMessageToSlack("CONTENTFUL", {name: "200 Success", message: "Webhookを正常に実行しました"});
-    res.status(200).send("success");
+    r.success(res, "success");
   } catch (err) {
     next(Object.assign(err, {function: "ctfWebhookEventRouter"}));
-    res.status(500).send("error");
+    r.error500(res, "error");
   }
 };
 

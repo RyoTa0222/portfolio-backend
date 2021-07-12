@@ -2,6 +2,7 @@ import {Request, Response, NextFunction} from "express";
 import createClient from "../plugins/contentful";
 import {PortfolioWork} from "../types/interface";
 import {PORTFOLIO_TYPE_WORK} from "../consts/config";
+import r from "../utils/response";
 
 const client = createClient();
 
@@ -14,12 +15,8 @@ const client = createClient();
 const getPortfolioWorks = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const {offset, limit} = req.query;
   // パラメータのチェック
-  if (typeof offset !== "string") {
-    res.send({success: false, message: "パラメータが不足しています"});
-    return;
-  }
-  if (typeof limit !== "string") {
-    res.send({success: false, message: "パラメータが不足しています"});
+  if (typeof offset !== "string" || typeof limit !== "string") {
+    r.error400(res, "パラメータが不足しています");
     return;
   }
   try {
@@ -45,13 +42,10 @@ const getPortfolioWorks = async (req: Request, res: Response, next: NextFunction
         year: fields.created_year,
       };
     });
-    res.json({
-      data,
-      success: true,
-    });
+    r.success(res, data);
   } catch (err) {
     next(Object.assign(err, {function: "getPortfolioWorks"}));
-    res.send({success: false, message: err.message});
+    r.error500(res, err.message);
   }
 };
 
@@ -64,19 +58,10 @@ const getPortfolioWorks = async (req: Request, res: Response, next: NextFunction
 const getPortfolioShops = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const {offset, limit, shopType} = req.query;
   // パラメータのチェック
-  if (typeof offset !== "string") {
-    res.send({success: false, message: "パラメータが不足しています"});
+  if (typeof offset !== "string" || typeof limit !== "string" || typeof shopType !== "string") {
+    r.error400(res, "パラメータが不足しています");
     return;
   }
-  if (typeof limit !== "string") {
-    res.send({success: false, message: "パラメータが不足しています"});
-    return;
-  }
-  if (typeof shopType !== "string") {
-    res.send({success: false, message: "パラメータが不足しています"});
-    return;
-  }
-  // contentful
   try {
     // contentfulからデータ取得
     const entries = await client.getEntries({
@@ -98,13 +83,10 @@ const getPortfolioShops = async (req: Request, res: Response, next: NextFunction
         link: fields.link ?? null,
       };
     });
-    res.json({
-      data,
-      success: true,
-    });
+    r.success(res, data);
   } catch (err) {
     next(Object.assign(err, {function: "getPortfolioShops"}));
-    res.send({success: false, message: err.message});
+    r.error500(res, err.message);
   }
 };
 
