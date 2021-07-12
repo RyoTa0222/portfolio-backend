@@ -152,6 +152,7 @@ const getBlogContents = async (req: Request, res: Response, next: NextFunction):
         const tagFields = tagObj.fields as BlogCategory;
         return {
           title: fields.title,
+          id: fields.id,
           created_at: created_at,
           tag: {
             label: tagFields.categoryName,
