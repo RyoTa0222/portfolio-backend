@@ -1,6 +1,12 @@
 # Portfolio-backend
 
+![Portfolio](https://user-images.githubusercontent.com/45546517/125272570-f60a0600-e346-11eb-81ab-c8a96df6c74f.png "Portfolio")
+
 説明説明説明説明説明説明説明説明
+
+## :page_facing_up: システム構成図
+
+後日
 
 ## :wrench: 環境構築
 
@@ -51,4 +57,4 @@ firebase login
 
 ## :raised_hand: Author
 
-RyoTa.
+<h2 align="center">RyoTa.</h2>
