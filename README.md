@@ -42,7 +42,7 @@ firebase login
 
 `functions:config`を利用しており、以下のデータを保持しています
 
-```
+```json
 {
   "slack": {
     "contentful_webhook_url": CONTENTFUL_WEBHOOK_URL,
