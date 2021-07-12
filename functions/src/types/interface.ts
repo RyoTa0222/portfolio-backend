@@ -5,7 +5,7 @@ export interface ContentfulConfig {
 
 export type SLACK_NOTIFICATION_TYPE = "SERVER" | "CONTENTFUL"
 
-export interface SLACK_NOTIFICATION {
+export interface SlackNotification {
     name: string
     message: string
     function?: unknown
@@ -32,3 +32,11 @@ export interface BlogCategory {
     color: string,
     priority: number
 }
+
+export interface BlogLgtm {
+    good: number
+    bad: number
+}
+
+export type BlogLgtmType = "good" | "bad"
+export type BlogLgtmAction = "increment" | "decrement"

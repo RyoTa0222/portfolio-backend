@@ -1,4 +1,6 @@
 import {db} from "../plugins/firestore";
+import {BlogLgtmType, BlogLgtm} from "../types/interface";
+import admin from "firebase-admin";
 
 /**
  *ブログのLGTMデータの保存
@@ -80,6 +82,56 @@ export const getTagArchive = async (tag: string): Promise<null | Record<string, 
     } else {
       return doc.data() as unknown as Record<string, number>;
     }
+  } catch (err) {
+    return null;
+  }
+};
+
+/**
+ *ブログのLGTMの取得
+ * @param {string} id
+ * @return {unknown}
+ */
+export const getBlogLgtm = async (id: string): Promise<null | BlogLgtm> => {
+  try {
+    const docRef = db.collection("blog_lgtm").doc(id);
+    const doc = await docRef.get();
+    if (!doc.exists) {
+      return null;
+    } else {
+      return doc.data() as unknown as BlogLgtm;
+    }
+  } catch (err) {
+    return null;
+  }
+};
+
+/**
+ *ブログのLGTMの取得
+ * @param {string} id
+ * @param {BlogLgtmType} type
+ * @param {number} value
+ * @return {unknown}
+ */
+export const putBlogLgtm = async (id: string, type: BlogLgtmType, value: number): Promise<unknown> => {
+  try {
+    const docRef = db.collection("blog_lgtm").doc(id);
+    let res;
+    switch (type) {
+      case "good":
+        res = docRef.update({
+          good: admin.firestore.FieldValue.increment(value),
+        });
+        break;
+      case "bad":
+        res = docRef.update({
+          bad: admin.firestore.FieldValue.increment(value),
+        });
+        break;
+      default:
+        break;
+    }
+    return res;
   } catch (err) {
     return null;
   }
