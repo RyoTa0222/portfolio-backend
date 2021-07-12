@@ -31,6 +31,7 @@ app.get("/portfolio/works", portfolio.getPortfolioWorks);
 app.get("/portfolio/shops", portfolio.getPortfolioShops);
 // blog
 app.get("/blog", blog.getBlog);
+app.get("/blog/contents", blog.getBlogContents);
 app.get("/blog/contents/lgtm", blog.getBlogContentsLgtm);
 app.post("/blog/contents/lgtm", blog.postBlogContentsLgtm);
 
