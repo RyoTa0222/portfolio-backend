@@ -5,6 +5,7 @@ import {ctfWebhookCreateBlogEvent, ctfWebhookUpdateBlogEvent} from "./controller
 import {sendMessageToSlack} from "./utils/sendToSlack";
 import portfolio from "./controllers/portfolio";
 import blog from "./controllers/blog";
+import roadmap from "./controllers/roadmap";
 import r from "./utils/response";
 
 // Create Express server
@@ -35,6 +36,8 @@ app.get("/blog/contents", blog.getBlogContents);
 app.get("/blog/contents/lgtm", blog.getBlogContentsLgtm);
 app.post("/blog/contents/lgtm", blog.postBlogContentsLgtm);
 app.get("/blog/contents/:id", blog.getBlogContent);
+// roadmap
+app.get("/roadmap", roadmap.getRoadmap);
 
 // webhook
 app.post("/contentful/lgtm", ctfWebhookCreateBlogEvent);
