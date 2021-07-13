@@ -233,6 +233,7 @@ const getBlogContent = async (req: Request, res: Response, next: NextFunction): 
         name: authorFields.name,
         description: authorFields.description,
         image: authorImageObj.fields.file.url,
+        id: authorObj.sys.id,
       },
       lgtm,
       index: getShapedBlogIndex((fields.body as {content: any[]}).content),
