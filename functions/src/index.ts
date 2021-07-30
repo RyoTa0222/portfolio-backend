@@ -1,5 +1,5 @@
 import * as functions from "firebase-functions";
-import express, {Request, Response, NextFunction} from "express";
+import express, {Request, Response} from "express";
 import cors from "cors";
 import {ctfWebhookCreateBlogEvent, ctfWebhookUpdateBlogEvent} from "./controllers/contentful";
 import {sendMessageToSlack} from "./utils/sendToSlack";
@@ -7,6 +7,7 @@ import portfolio from "./controllers/portfolio";
 import blog from "./controllers/blog";
 import roadmap from "./controllers/roadmap";
 import r from "./utils/response";
+import {postNotificationFromSentryToSlack} from "./controllers/sentry";
 
 // Create Express server
 const app: express.Express = express();
@@ -42,11 +43,12 @@ app.get("/roadmap", roadmap.getRoadmap);
 // webhook
 app.post("/contentful/lgtm", ctfWebhookCreateBlogEvent);
 app.put("/contentful/archive", ctfWebhookUpdateBlogEvent);
+app.post("/sentry", postNotificationFromSentryToSlack);
 
 // ハンドリングしてきたエラー処理
 // エラー処理ミドルウェアは、その他の app.use() およびルート呼び出しの後で最後に定義します
 // https://expressjs.com/ja/guide/error-handling.html
-app.use(async (err: Error, req: Request, res: Response, next: NextFunction) => {
+app.use(async (err: Error) => {
   await sendMessageToSlack("SERVER", err);
 });
 

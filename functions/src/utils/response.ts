@@ -1,6 +1,6 @@
 import {Response} from "express";
 
-const success = (res: Response, data?: unknown) => {
+const success = (res: Response, data?: unknown): void => {
   const response: Record<string, unknown> = {success: true};
   if (data) {
     response.data = data;
@@ -8,7 +8,7 @@ const success = (res: Response, data?: unknown) => {
   res.status(200).send(response);
 };
 
-const error400 = (res: Response, message?: unknown) => {
+const error400 = (res: Response, message?: unknown): void => {
   const response: Record<string, unknown> = {success: false};
   if (message) {
     response.message = message;
@@ -16,7 +16,7 @@ const error400 = (res: Response, message?: unknown) => {
   res.status(400).send(response);
 };
 
-const error500 = (res: Response, message?: unknown) => {
+const error500 = (res: Response, message?: unknown): void => {
   const response: Record<string, unknown> = {success: false};
   if (message) {
     response.message = message;
