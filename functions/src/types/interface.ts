@@ -3,12 +3,13 @@ export interface ContentfulConfig {
     accessToken: string
 }
 
-export type SLACK_NOTIFICATION_TYPE = "SERVER" | "CONTENTFUL"
+export type SLACK_NOTIFICATION_TYPE = "SERVER" | "CONTENTFUL" | "SENTRY"
 
 export interface SlackNotification {
     name: string
     message: string
     function?: unknown
+    type?: "info" | "error"
 }
 
 export interface PortfolioWork {
@@ -62,20 +63,20 @@ export interface BlogContent {
     }
     author: {
         sys: {
-            type: "Link",
-            linkType: "Entry",
+            type: "Link"
+            linkType: "Entry"
             id: string
         }
     }
 }
 
 export interface Author {
-    name: string,
-    description: string,
+    name: string
+    description: string
     image: {
         sys: {
-            type: "Link",
-            linkType: "Asset",
+            type: "Link"
+            linkType: "Asset"
             id: string
         }
     }
@@ -84,10 +85,23 @@ export interface Author {
 export interface BlogContentHeading {
     data: Record<string, unknown>,
     content: {
-        data: Record<string, unknown>,
-        marks: [],
-        value: string,
+        data: Record<string, unknown>
+        marks: []
+        value: string
         nodeType: string
     }[],
     nodeType: string
 }
+
+export interface RoadmapItem {
+    label: string
+    completed: boolean
+}
+
+export type RoadmapStateType = "merge" | "develop" | "schedule"
+
+export interface RoadmapFields {
+    content: string
+    completed: boolean
+    state: (RoadmapStateType)[]
+  }
