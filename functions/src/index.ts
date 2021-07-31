@@ -52,6 +52,23 @@ app.use(async (err: Error) => {
   await sendMessageToSlack("SERVER", err);
 });
 
+// 予算アラート通知
+export const notifyUsageFeeToSlack = functions.pubsub.topic("notifyUsageFeeToSlack").onPublish((message) => {
+  const messageBody_JSON = Buffer.from(message.data, "base64").toString();
+  const messageBody = JSON.parse(messageBody_JSON);
+  console.log(messageBody_JSON);
+  const cost = messageBody.costAmount;
+  const budget = messageBody.budgetAmount;
+  if (cost > 0) {
+    const message_text = `Firebase 今月の利用額：${cost}円\n予算：${budget}円`;
+    sendMessageToSlack("SERVER", {
+      name: "Firebase 予算アラート",
+      message: message_text,
+      type: "info",
+    });
+  }
+});
+
 export const api = functions
     .region("asia-northeast1")
     .https.onRequest(app);

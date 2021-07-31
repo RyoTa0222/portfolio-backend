@@ -9,6 +9,7 @@ export interface SlackNotification {
     name: string
     message: string
     function?: unknown
+    type?: "info" | "error"
 }
 
 export interface PortfolioWork {

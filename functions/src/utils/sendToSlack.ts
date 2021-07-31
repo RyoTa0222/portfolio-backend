@@ -5,6 +5,7 @@ import {
   SLACK_SENTRY_WEBHOOK_URL,
 } from "../consts/config";
 import {SLACK_NOTIFICATION_TYPE, SlackNotification} from "../types/interface";
+import {Block} from "@slack/types";
 
 /**
   * メッセージをslackに送信
@@ -16,7 +17,7 @@ export const sendMessageToSlack = async (type: SLACK_NOTIFICATION_TYPE, obj: Sla
   // slackにエラーを追加
   const webhook = new IncomingWebhook(url);
   // message作成
-  const message: any[] = [
+  const message: unknown[] = [
     {
       "type": "section",
       "fields": [
@@ -47,12 +48,25 @@ export const sendMessageToSlack = async (type: SLACK_NOTIFICATION_TYPE, obj: Sla
       ],
     });
   }
+  /**
+   * 色コードの取得
+   * @return {string} 色コード
+   */
+  const color = () => {
+    let _type;
+    if (obj.type) {
+      _type = obj.type;
+    } else {
+      _type = type === "CONTENTFUL" ? "info" : "error";
+    }
+    return _type === "info" ? "#6FCBFF" : "#FF6D6D";
+  };
   // 送信
   await webhook.send({
     "attachments": [
       {
-        "color": type === "CONTENTFUL" ? "#6FCBFF" : "#FF6D6D",
-        "blocks": message,
+        "color": color(),
+        "blocks": message as Block[],
       },
     ],
   });
