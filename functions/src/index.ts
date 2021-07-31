@@ -59,8 +59,8 @@ export const notifyUsageFeeToSlack = functions.pubsub.topic("notifyUsageFeeToSla
   console.log(messageBody_JSON);
   const cost = messageBody.costAmount;
   const budget = messageBody.budgetAmount;
-  if (cost > budget - 10) {
-    const message_text = `Firebase 今月の利用額：${cost}円\n予算：${budget}円`;
+  if (cost > Number(budget) - 10) {
+    const message_text = `今月の利用額：${cost}円\n予算：${budget}円`;
     sendMessageToSlack("SERVER", {
       name: "Firebase 予算アラート",
       message: message_text,
