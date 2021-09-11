@@ -37,7 +37,7 @@ const getRoadmap = async (req: Request, res: Response, next: NextFunction): Prom
     r.success(res, data);
   } catch (err) {
     next(Object.assign(err, {function: "getRoadmap"}));
-    r.error500(res, err.message);
+    r.error500(res, (err as Error).message);
   }
 };
 

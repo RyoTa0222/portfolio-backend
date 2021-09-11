@@ -45,7 +45,7 @@ const getPortfolioWorks = async (req: Request, res: Response, next: NextFunction
     r.success(res, data);
   } catch (err) {
     next(Object.assign(err, {function: "getPortfolioWorks"}));
-    r.error500(res, err.message);
+    r.error500(res, (err as Error).message);
   }
 };
 
@@ -86,7 +86,7 @@ const getPortfolioShops = async (req: Request, res: Response, next: NextFunction
     r.success(res, data);
   } catch (err) {
     next(Object.assign(err, {function: "getPortfolioShops"}));
-    r.error500(res, err.message);
+    r.error500(res, (err as Error).message);
   }
 };
 
