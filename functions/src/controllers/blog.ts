@@ -31,7 +31,7 @@ const getBlogContentsLgtm = async (req: Request, res: Response, next: NextFuncti
     r.success(res, data);
   } catch (err) {
     next(Object.assign(err, {function: "getBlogContentsLgtm"}));
-    r.error500(res, err.message);
+    r.error500(res, (err as Error).message);
   }
 };
 
@@ -58,7 +58,7 @@ const postBlogContentsLgtm = async (req: Request, res: Response, next: NextFunct
     r.success(res);
   } catch (err) {
     next(Object.assign(err, {function: "postBlogContentsLgtm"}));
-    r.error500(res, err.message);
+    r.error500(res, (err as Error).message);
   }
 };
 
@@ -96,7 +96,7 @@ const getBlog = async (req: Request, res: Response, next: NextFunction): Promise
     r.success(res, data);
   } catch (err) {
     next(Object.assign(err, {function: "getBlog"}));
-    r.error500(res, err.message);
+    r.error500(res, (err as Error).message);
   }
 };
 
@@ -172,7 +172,7 @@ const getBlogContents = async (req: Request, res: Response, next: NextFunction):
     r.success(res, data);
   } catch (err) {
     next(Object.assign(err, {function: "getBlogContents"}));
-    r.error500(res, err.message);
+    r.error500(res, (err as Error).message);
   }
 };
 
@@ -203,6 +203,7 @@ const getBlogContent = async (req: Request, res: Response, next: NextFunction): 
     const fields = item.fields as BlogContent;
     // 記事データの整形
     // 作成日
+    console.log(JSON.stringify(item));
     const created_at = DateTime.fromISO(item.sys.createdAt).toFormat("yyyy-MM-dd");
     // 更新日
     const updated_at = DateTime.fromISO(item.sys.updatedAt).toFormat("yyyy-MM-dd");
@@ -247,7 +248,7 @@ const getBlogContent = async (req: Request, res: Response, next: NextFunction): 
     r.success(res, data);
   } catch (err) {
     next(Object.assign(err, {function: "getBlogContent"}));
-    r.error500(res, err.message);
+    r.error500(res, (err as Error).message);
   }
 };
 /**
