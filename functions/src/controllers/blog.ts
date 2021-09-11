@@ -215,11 +215,20 @@ const getBlogContent = async (req: Request, res: Response, next: NextFunction): 
     const tagObj = entries.includes.Entry.find((_entry: any) => _entry.sys.id === tagId);
     const tagFields = tagObj.fields as BlogCategory;
     // 著者
-    const authorId = fields.author.sys.id;
-    const authorObj = entries.includes.Entry.find((_entry: any) => _entry.sys.id === authorId);
-    const authorFields = authorObj.fields as Author;
-    const authorImageId = authorFields.image.sys.id;
-    const authorImageObj = entries.includes.Asset.find((_asset: any) => _asset.sys.id === authorImageId);
+    let author = null;
+    const authorId = fields.author?.sys?.id;
+    if (authorId) {
+      const authorObj = entries.includes.Entry.find((_entry: any) => _entry.sys.id === authorId);
+      const authorFields = authorObj.fields as Author;
+      const authorImageId = authorFields.image.sys.id;
+      const authorImageObj = entries.includes.Asset.find((_asset: any) => _asset.sys.id === authorImageId);
+      author = {
+        name: authorFields.name,
+        description: authorFields.description,
+        image: authorImageObj.fields.file.url,
+        id: authorObj.sys.id,
+      };
+    }
     // LGTMの取得
     const lgtm = await getBlogLgtm(id);
     const data = {
@@ -230,12 +239,7 @@ const getBlogContent = async (req: Request, res: Response, next: NextFunction): 
       content: fields.body,
       entry: entries.includes?.Entry ?? null,
       asset: entries.includes?.Asset ?? null,
-      author: {
-        name: authorFields.name,
-        description: authorFields.description,
-        image: authorImageObj.fields.file.url,
-        id: authorObj.sys.id,
-      },
+      author,
       lgtm,
       index: getShapedBlogIndex((fields.body as {content: any[]}).content),
       tag: {
