@@ -31,7 +31,7 @@ const getBlogContentsLgtm = async (req: Request, res: Response, next: NextFuncti
     r.success(res, data);
   } catch (err) {
     next(Object.assign(err, {function: "getBlogContentsLgtm"}));
-    r.error500(res, err.message);
+    r.error500(res, (err as Error).message);
   }
 };
 
@@ -58,7 +58,7 @@ const postBlogContentsLgtm = async (req: Request, res: Response, next: NextFunct
     r.success(res);
   } catch (err) {
     next(Object.assign(err, {function: "postBlogContentsLgtm"}));
-    r.error500(res, err.message);
+    r.error500(res, (err as Error).message);
   }
 };
 
@@ -96,7 +96,7 @@ const getBlog = async (req: Request, res: Response, next: NextFunction): Promise
     r.success(res, data);
   } catch (err) {
     next(Object.assign(err, {function: "getBlog"}));
-    r.error500(res, err.message);
+    r.error500(res, (err as Error).message);
   }
 };
 
@@ -172,7 +172,7 @@ const getBlogContents = async (req: Request, res: Response, next: NextFunction):
     r.success(res, data);
   } catch (err) {
     next(Object.assign(err, {function: "getBlogContents"}));
-    r.error500(res, err.message);
+    r.error500(res, (err as Error).message);
   }
 };
 
@@ -203,6 +203,7 @@ const getBlogContent = async (req: Request, res: Response, next: NextFunction): 
     const fields = item.fields as BlogContent;
     // 記事データの整形
     // 作成日
+    console.log(JSON.stringify(item));
     const created_at = DateTime.fromISO(item.sys.createdAt).toFormat("yyyy-MM-dd");
     // 更新日
     const updated_at = DateTime.fromISO(item.sys.updatedAt).toFormat("yyyy-MM-dd");
@@ -214,11 +215,20 @@ const getBlogContent = async (req: Request, res: Response, next: NextFunction): 
     const tagObj = entries.includes.Entry.find((_entry: any) => _entry.sys.id === tagId);
     const tagFields = tagObj.fields as BlogCategory;
     // 著者
-    const authorId = fields.author.sys.id;
-    const authorObj = entries.includes.Entry.find((_entry: any) => _entry.sys.id === authorId);
-    const authorFields = authorObj.fields as Author;
-    const authorImageId = authorFields.image.sys.id;
-    const authorImageObj = entries.includes.Asset.find((_asset: any) => _asset.sys.id === authorImageId);
+    let author = null;
+    const authorId = fields.author?.sys?.id;
+    if (authorId) {
+      const authorObj = entries.includes.Entry.find((_entry: any) => _entry.sys.id === authorId);
+      const authorFields = authorObj.fields as Author;
+      const authorImageId = authorFields.image.sys.id;
+      const authorImageObj = entries.includes.Asset.find((_asset: any) => _asset.sys.id === authorImageId);
+      author = {
+        name: authorFields.name,
+        description: authorFields.description,
+        image: authorImageObj.fields.file.url,
+        id: authorObj.sys.id,
+      };
+    }
     // LGTMの取得
     const lgtm = await getBlogLgtm(id);
     const data = {
@@ -229,12 +239,7 @@ const getBlogContent = async (req: Request, res: Response, next: NextFunction): 
       content: fields.body,
       entry: entries.includes?.Entry ?? null,
       asset: entries.includes?.Asset ?? null,
-      author: {
-        name: authorFields.name,
-        description: authorFields.description,
-        image: authorImageObj.fields.file.url,
-        id: authorObj.sys.id,
-      },
+      author,
       lgtm,
       index: getShapedBlogIndex((fields.body as {content: any[]}).content),
       tag: {
@@ -247,7 +252,7 @@ const getBlogContent = async (req: Request, res: Response, next: NextFunction): 
     r.success(res, data);
   } catch (err) {
     next(Object.assign(err, {function: "getBlogContent"}));
-    r.error500(res, err.message);
+    r.error500(res, (err as Error).message);
   }
 };
 /**
