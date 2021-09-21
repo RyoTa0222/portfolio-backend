@@ -123,7 +123,7 @@ export const getTagArchives = async (): Promise<Record<string, number>[]> => {
   try {
     const docRef = db.collection("blog").doc("archive");
     const tagRef = docRef.collection("tag");
-    const snapshot = await tagRef.orderBy("order", "desc").get();
+    const snapshot = await tagRef.orderBy("order").get();
     if (snapshot.empty) {
       return [];
     }
