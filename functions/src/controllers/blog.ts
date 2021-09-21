@@ -203,7 +203,6 @@ const getBlogContent = async (req: Request, res: Response, next: NextFunction): 
     const fields = item.fields as BlogContent;
     // 記事データの整形
     // 作成日
-    console.log(JSON.stringify(item));
     const created_at = DateTime.fromISO(item.sys.createdAt).toFormat("yyyy-MM-dd");
     // 更新日
     const updated_at = DateTime.fromISO(item.sys.updatedAt).toFormat("yyyy-MM-dd");
@@ -262,10 +261,11 @@ const getBlogContent = async (req: Request, res: Response, next: NextFunction): 
  */
 const getShapedBlogIndex = (document: any[]) => {
   const arr: BlogContentHeading[] = document.filter((doc: any) => BLOG_HEADING_LIST.includes(doc.nodeType));
-  const res = arr.map((item) => (
+  const res = arr.map((item, index) => (
     {
       label: item.content[0].value,
       type: item.nodeType.slice(0, 1) + item.nodeType.slice(-1),
+      index,
     }
   ));
   return res;

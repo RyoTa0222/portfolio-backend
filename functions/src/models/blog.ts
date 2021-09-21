@@ -22,10 +22,11 @@ export const postBlogLgtm = async (id: string): Promise<unknown> => {
  * @param {string} tag
  * @param {number} monthly_count
  * @param {number} tag_count
+ * @param {number} tag_order
  * @param {number} tag_percent
  * @return {unknown}
  */
-export const putBlogArchive = async (created_at: string, tag: string, monthly_count: number, tag_count: number, tag_percent: number): Promise<boolean | unknown> => {
+export const putBlogArchive = async (created_at: string, tag: string, monthly_count: number, tag_count: number, tag_order: number, tag_percent: number): Promise<boolean | unknown> => {
   try {
     const archiveRef = db.collection("blog").doc("archive");
     // 月別アーカイブ
@@ -38,6 +39,7 @@ export const putBlogArchive = async (created_at: string, tag: string, monthly_co
     await tagRef.set({
       count: tag_count,
       percent: tag_percent,
+      order: tag_order,
     }, {merge: true});
     return true;
   } catch (err) {
@@ -86,7 +88,7 @@ export const getMonthlyArchives = async (): Promise<Record<string, number>[]> =>
         });
       }
     });
-    return arr;
+    return arr.reverse();
   } catch (err) {
     return [];
   }
@@ -121,7 +123,7 @@ export const getTagArchives = async (): Promise<Record<string, number>[]> => {
   try {
     const docRef = db.collection("blog").doc("archive");
     const tagRef = docRef.collection("tag");
-    const snapshot = await tagRef.get();
+    const snapshot = await tagRef.orderBy("order", "desc").get();
     if (snapshot.empty) {
       return [];
     }

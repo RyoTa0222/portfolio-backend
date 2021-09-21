@@ -55,14 +55,21 @@ export const ctfWebhookUpdateBlogEvent = async (req: Request, res: Response, nex
       return;
     }
     const tag = (entries.items.find((item) => item.sys.id === tag_id)?.fields as BlogCategory).categoryId;
+    const tag_order = (entries.items.find((item) => item.sys.id === tag_id)?.fields as BlogCategory).priority;
     // 月別アーカイブ情報の取得
     const monthly_count = await getBlogCountOfMonth(created_at);
     // タグ別アーカイブ情報の取得
     const tag_count = await getBlogCountOfCategory(tag_id);
     const percent = await getBlogPercentageOfCategory(tag_id);
     // アーカイブ情報の更新
-    await putBlogArchive(created_at, tag, monthly_count, tag_count, percent );
-    sendMessageToSlack("CONTENTFUL", {name: "200 Success", message: "Webhookを正常に実行しました\n 関数：ctfWebhookUpdateBlogEvent"});
+    await putBlogArchive(created_at, tag, monthly_count, tag_count, tag_order, percent );
+    sendMessageToSlack(
+        "CONTENTFUL",
+        {
+          name: "200 Success",
+          message: "Webhookを正常に実行しました\n 関数：ctfWebhookUpdateBlogEvent",
+        }
+    );
     r.success(res, "success");
   } catch (err) {
     next(Object.assign(err, {function: "ctfWebhookEventRouter"}));
