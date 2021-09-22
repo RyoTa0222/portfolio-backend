@@ -60,12 +60,22 @@ export const notifyUsageFeeToSlack = functions.pubsub.topic("notifyUsageFeeToSla
   const cost = messageBody.costAmount;
   const budget = messageBody.budgetAmount;
   if (cost > 0) {
+    // メッセージをslackに送信するかのフラグ
+    let flg = false;
     const message_text = `Firebase 今月の利用額：${cost}円\n予算：${budget}円`;
-    sendMessageToSlack("SERVER", {
-      name: "Firebase 予算アラート",
-      message: message_text,
-      type: "info",
-    });
+    // コストが指定の閾値
+    // 50%以上
+    // TODO: 前回の予算を保存しておいてどれくらい上がっているかをみれた方がいい
+    if (cost > budget / 2 ) {
+      flg = true;
+    }
+    if (flg) {
+      sendMessageToSlack("SERVER", {
+        name: "Firebase 予算アラート",
+        message: message_text,
+        type: "info",
+      });
+    }
   }
 });
 
