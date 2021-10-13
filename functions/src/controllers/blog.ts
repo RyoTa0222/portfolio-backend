@@ -2,9 +2,10 @@ import {Request, Response, NextFunction} from "express";
 import createClient from "../plugins/contentful";
 import {LGTM, LGTM_ACTION, BLOG_HEADING_LIST} from "../consts/config";
 import {getBlogLgtm, putBlogLgtm, getMonthlyArchives, getTagArchives} from "../models/blog";
-import {BlogCategory, BlogContent, BlogContentHeading, Author} from "../types/interface";
+import {BlogCategory, BlogContent, BlogContentHeading, Author, CtfContent} from "../types/interface";
 import {DateTime} from "luxon";
 import r from "../utils/response";
+import {getOgp} from "../utils/getOgp";
 
 const client = createClient();
 
@@ -230,12 +231,13 @@ const getBlogContent = async (req: Request, res: Response, next: NextFunction): 
     }
     // LGTMの取得
     const lgtm = await getBlogLgtm(id);
+    const content = await mergeOgp((fields.body as {content:CtfContent[]}).content);
     const data = {
       title: fields.title,
       image: imageObj.fields.file.url,
       created_at,
       updated_at,
-      content: fields.body,
+      content,
       entry: entries.includes?.Entry ?? null,
       asset: entries.includes?.Asset ?? null,
       author,
@@ -254,6 +256,31 @@ const getBlogContent = async (req: Request, res: Response, next: NextFunction): 
     r.error500(res, (err as Error).message);
   }
 };
+
+/**
+ * hyperlinkにOGP情報を付与する
+ * @param {CtfContent[]} arr
+ * @return {Promise<CtfContent[]>}
+ */
+const mergeOgp = async (arr: CtfContent[]) => {
+  return await Promise.all(arr.map(async (el) => {
+    if (el?.nodeType === "paragraph") {
+      if (el.content) {
+        await Promise.all(el.content.map(async (_el) => {
+          if (_el.nodeType === "hyperlink") {
+            const url = _el.data.uri;
+            const ogp = await getOgp(url);
+            _el["ogp"] = ogp;
+            console.log(`_el: ${JSON.stringify(_el)}`);
+          }
+          return _el;
+        }));
+      }
+    }
+    return el;
+  }));
+};
+
 /**
  * ブログの目次の生成
  * @param {any[]} document

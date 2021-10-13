@@ -104,4 +104,13 @@ export interface RoadmapFields {
     content: string
     completed: boolean
     state: (RoadmapStateType)[]
-  }
+}
+
+export interface CtfContent {
+    data: Record<string, string>
+    content?: CtfContent[]
+    marks?: any[]
+    value?: string
+    nodeType: string
+    ogp?: Record<string, string> | null
+}
