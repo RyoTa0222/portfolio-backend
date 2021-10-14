@@ -267,11 +267,11 @@ const mergeOgp = async (arr: CtfContent[]) => {
     if (el?.nodeType === "paragraph") {
       if (el.content) {
         if (
-          el.content[0].nodeType === "text" &&
-          el.content[0].value === "" &&
-          el.content[1].nodeType === "hyperlink" &&
-          el.content[2].nodeType === "text" &&
-          el.content[2].value === ""
+          el.content[0]?.nodeType === "text" &&
+          el.content[0]?.value === "" &&
+          el.content[1]?.nodeType === "hyperlink" &&
+          el.content[2]?.nodeType === "text" &&
+          el.content[2]?.value === ""
         ) {
           const ogp = await getOgp(el.content[1].data.uri);
           el.content[1].data["ogp"] = ogp;
