@@ -107,7 +107,7 @@ export interface RoadmapFields {
 }
 
 export interface CtfContent {
-    data: Record<string, string>
+    data: Record<string, any>
     content?: CtfContent[]
     marks?: any[]
     value?: string

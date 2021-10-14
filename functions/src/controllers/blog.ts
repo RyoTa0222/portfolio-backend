@@ -266,15 +266,16 @@ const mergeOgp = async (arr: CtfContent[]) => {
   return await Promise.all(arr.map(async (el) => {
     if (el?.nodeType === "paragraph") {
       if (el.content) {
-        await Promise.all(el.content.map(async (_el) => {
-          if (_el.nodeType === "hyperlink") {
-            const url = _el.data.uri;
-            const ogp = await getOgp(url);
-            _el["ogp"] = ogp;
-            console.log(`_el: ${JSON.stringify(_el)}`);
-          }
-          return _el;
-        }));
+        if (
+          el.content[0].nodeType === "text" &&
+          el.content[0].value === "" &&
+          el.content[1].nodeType === "hyperlink" &&
+          el.content[2].nodeType === "text" &&
+          el.content[2].value === ""
+        ) {
+          const ogp = await getOgp(el.content[1].data.uri);
+          el.content[1].data["ogp"] = ogp;
+        }
       }
     }
     return el;
