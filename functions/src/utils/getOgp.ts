@@ -13,7 +13,7 @@ export const getOgp = async (url: string): Promise<Record<string, string> | null
     const ogp = extractOgp([...meta]);
     return ogp;
   } catch (err) {
-    if (err instanceof Error) throw new Error(err.message);
+    if (err instanceof Error) console.error(err.message);
     return null;
   }
 };

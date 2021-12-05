@@ -271,7 +271,6 @@ const mergeOgp = async (arr: CtfContent[]) => {
             const url = _el.data.uri;
             const ogp = await getOgp(url);
             _el["ogp"] = ogp;
-            console.log(`_el: ${JSON.stringify(_el)}`);
           }
           return _el;
         }));
