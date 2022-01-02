@@ -3,6 +3,12 @@ export interface ContentfulConfig {
     accessToken: string
 }
 
+export interface ContentfulPreviewConfig {
+    space: string,
+    accessToken: string,
+    host: string
+}
+
 export type SLACK_NOTIFICATION_TYPE = "SERVER" | "CONTENTFUL" | "SENTRY"
 
 export interface SlackNotification {

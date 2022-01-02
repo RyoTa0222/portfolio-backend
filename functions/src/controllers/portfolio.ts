@@ -4,7 +4,7 @@ import {PortfolioWork} from "../types/interface";
 import {PORTFOLIO_TYPE_WORK} from "../consts/config";
 import r from "../utils/response";
 
-const client = createClient();
+const client = createClient({preview: false});
 
 /**
   * ポートフォリオの製作物一覧の取得

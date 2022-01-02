@@ -7,7 +7,8 @@ import {DateTime} from "luxon";
 import r from "../utils/response";
 import {getOgp} from "../utils/getOgp";
 
-const client = createClient();
+const client = createClient({preview: false});
+const previewClient = createClient({preview: true});
 
 /**
   * ブログのLGTMの取得
@@ -185,17 +186,24 @@ const getBlogContents = async (req: Request, res: Response, next: NextFunction):
   */
 const getBlogContent = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const {id} = req.params;
+  const preview = req.query?.preview;
   // パラメータのチェック
   if (!id) {
     r.error400(res, "パラメータが不足しています");
     return;
   }
   try {
-    // contentfulからデータ取得
-    const entries = await client.getEntries({
+    const params = {
       "content_type": "blog",
       "fields.id": id,
-    });
+    };
+    let entries;
+    // contentfulからデータ取得
+    if (preview) {
+      entries = await previewClient.getEntries(params);
+    } else {
+      entries = await client.getEntries(params);
+    }
     if (entries.total < 1) {
       r.error400(res, "記事が見つかりません");
       return;
@@ -269,9 +277,13 @@ const mergeOgp = async (arr: CtfContent[]) => {
         await Promise.all(el.content.map(async (_el) => {
           if (_el.nodeType === "hyperlink") {
             const url = _el.data.uri;
-            const ogp = await getOgp(url);
-            _el["ogp"] = ogp;
-            console.log(`_el: ${JSON.stringify(_el)}`);
+            try {
+              const ogp = await getOgp(url);
+              _el["ogp"] = ogp;
+              console.log(`_el: ${JSON.stringify(_el)}`);
+            } catch (err) {
+              console.log(err);
+            }
           }
           return _el;
         }));
