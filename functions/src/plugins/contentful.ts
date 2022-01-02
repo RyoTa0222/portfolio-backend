@@ -1,5 +1,5 @@
 import {createClient, ContentfulClientApi} from "contentful";
-import {ContentfulConfig} from "../types/interface";
+import {ContentfulConfig, ContentfulPreviewConfig} from "../types/interface";
 import {config} from "../consts/config";
 
 const ctfConfig: ContentfulConfig = {
@@ -7,8 +7,17 @@ const ctfConfig: ContentfulConfig = {
   accessToken: config.contentful.access_token,
 };
 
+const ctfPreviewConfig: ContentfulPreviewConfig = {
+  space: config.contentful.space_id,
+  accessToken: config.contentful.preview_access_token,
+  host: "preview.contentful.com",
+};
+
 // https://www.contentful.com/developers/docs/references/content-delivery-api/
-const plugin = (): ContentfulClientApi => {
+const plugin = (arg: { preview: any } | undefined): ContentfulClientApi => {
+  if (arg?.preview) {
+    return createClient(ctfPreviewConfig);
+  }
   return createClient(ctfConfig);
 };
 
