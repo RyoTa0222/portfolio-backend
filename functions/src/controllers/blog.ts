@@ -242,6 +242,7 @@ const getBlogContent = async (req: Request, res: Response, next: NextFunction): 
     const content = await mergeOgp((fields.body as {content:CtfContent[]}).content);
     const data = {
       title: fields.title,
+      description: fields.description,
       image: imageObj.fields.file.url,
       created_at,
       updated_at,
