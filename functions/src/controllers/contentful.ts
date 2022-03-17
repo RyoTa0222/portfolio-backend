@@ -1,6 +1,12 @@
 import {NextFunction, Request, Response} from "express";
 import createClient from "../plugins/contentful";
-import {getBlogLgtm, postBlogLgtm, putBlogArchive} from "../models/blog";
+import {
+  getBlogLgtm,
+  postBlogLgtm,
+  putBlogArchive,
+  putBlogSeries,
+  deleteBlogSeries,
+} from "../models/blog";
 import {sendMessageToSlack} from "../utils/sendToSlack";
 import {BlogCategory} from "../types/interface";
 import {DateTime} from "luxon";
@@ -15,13 +21,21 @@ const client = createClient();
  * @param {Response} res レスポンス
  * @param {NextFunction} next レスポンス
  */
-export const ctfWebhookCreateBlogEvent = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const ctfWebhookCreateBlogEvent = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<void> => {
   try {
     const {id} = req.body;
     const response = await getBlogLgtm(id["en-US"]);
     if (response === null) {
       await postBlogLgtm(id["en-US"]);
-      sendMessageToSlack("CONTENTFUL", {name: "200 Success", message: "Webhookを正常に実行しました\n 関数：ctfWebhookCreateBlogEvent"});
+      sendMessageToSlack("CONTENTFUL", {
+        name: "200 Success",
+        message:
+          "Webhookを正常に実行しました\n 関数：ctfWebhookCreateBlogEvent",
+      });
     }
     r.success(res, "success");
   } catch (err) {
@@ -36,7 +50,11 @@ export const ctfWebhookCreateBlogEvent = async (req: Request, res: Response, nex
  * @param {Response} res レスポンス
  * @param {NextFunction} next レスポンス
  */
-export const ctfWebhookUpdateBlogEvent = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const ctfWebhookUpdateBlogEvent = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<void> => {
   try {
     const {createdAt, tagId} = req.body;
     // タグIDの取得
@@ -50,29 +68,103 @@ export const ctfWebhookUpdateBlogEvent = async (req: Request, res: Response, nex
     });
     // カテゴリIDが取得できなかった場合
     if (entries.total < 1) {
-      sendMessageToSlack("CONTENTFUL", {name: "400 Error", message: "カテゴリが取得できませんでした"});
+      sendMessageToSlack("CONTENTFUL", {
+        name: "400 Error",
+        message: "カテゴリが取得できませんでした",
+      });
       r.error500(res, "error");
       return;
     }
-    const tag = (entries.items.find((item) => item.sys.id === tag_id)?.fields as BlogCategory).categoryId;
-    const tag_order = (entries.items.find((item) => item.sys.id === tag_id)?.fields as BlogCategory).priority;
-    // 月別アーカイブ情報の取得
-    const monthly_count = await getBlogCountOfMonth(created_at);
-    // タグ別アーカイブ情報の取得
-    const tag_count = await getBlogCountOfCategory(tag_id);
-    const percent = await getBlogPercentageOfCategory(tag_id);
-    // アーカイブ情報の更新
-    await putBlogArchive(created_at, tag, monthly_count, tag_count, tag_order, percent );
-    sendMessageToSlack(
-        "CONTENTFUL",
-        {
-          name: "200 Success",
-          message: "Webhookを正常に実行しました\n 関数：ctfWebhookUpdateBlogEvent",
-        }
-    );
+    const tagItem = entries.items.find((item) => item.sys.id === tag_id);
+    if (tagItem) {
+      const tagField = tagItem.fields as BlogCategory;
+      const tag = tagField ? tagField.categoryId : "";
+      const tag_order = tagField ? tagField.priority : 0;
+      // 月別アーカイブ情報の取得
+      const monthly_count = await getBlogCountOfMonth(created_at);
+      // タグ別アーカイブ情報の取得
+      const tag_count = await getBlogCountOfCategory(tag_id);
+      const percent = await getBlogPercentageOfCategory(tag_id);
+      // アーカイブ情報の更新
+      await putBlogArchive(
+          created_at,
+          tag,
+          monthly_count,
+          tag_count,
+          tag_order,
+          percent
+      );
+    }
+    sendMessageToSlack("CONTENTFUL", {
+      name: "200 Success",
+      message: "Webhookを正常に実行しました\n 関数：ctfWebhookUpdateBlogEvent",
+    });
     r.success(res, "success");
   } catch (err) {
-    next(Object.assign(err, {function: "ctfWebhookEventRouter"}));
+    next(Object.assign(err, {function: "ctfWebhookUpdateBlogEvent"}));
+    r.error500(res, "error");
+  }
+};
+
+/**
+ * 記事のシリーズが作成された際に呼ばれる
+ * @param {Request} req webhookで渡ってきたリクエスト
+ * @param {Response} res レスポンス
+ * @param {NextFunction} next レスポンス
+ */
+export const ctfWebhookUpdateBlogSeriesEvent = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<void> => {
+  try {
+    const {
+      parameters: {categoryId, id},
+    } = req.body;
+    // カテゴリ情報の取得
+    const categoryData = await await client.getEntries<any>({
+      "content_type": "blogCategory",
+      "sys.id": categoryId["en-US"].sys.id,
+    });
+    // シリーズ情報の更新
+    if (categoryData.items[0] && categoryData.items[0].fields) {
+      await putBlogSeries(categoryData.items[0].fields.categoryId, id);
+    }
+    sendMessageToSlack("CONTENTFUL", {
+      name: "200 Success",
+      message: "Webhookを正常に実行しました\n ctfWebhookUpdateBlogSeriesEvent",
+    });
+    r.success(res, "success");
+  } catch (err) {
+    next(Object.assign(err, {function: "ctfWebhookUpdateBlogSeriesEvent"}));
+    r.error500(res, "error");
+  }
+};
+
+/**
+ * 記事のシリーズが削除された際に呼ばれる
+ * @param {Request} req webhookで渡ってきたリクエスト
+ * @param {Response} res レスポンス
+ * @param {NextFunction} next レスポンス
+ */
+export const ctfWebhookDeleteBlogSeriesEvent = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<void> => {
+  try {
+    const {
+      parameters: {id},
+    } = req.body;
+    // シリーズ情報の削除
+    await deleteBlogSeries(id);
+    sendMessageToSlack("CONTENTFUL", {
+      name: "200 Success",
+      message: "Webhookを正常に実行しました\n ctfWebhookDeleteBlogSeriesEvent",
+    });
+    r.success(res, "success");
+  } catch (err) {
+    next(Object.assign(err, {function: "ctfWebhookDeleteBlogSeriesEvent"}));
     r.error500(res, "error");
   }
 };
@@ -85,14 +177,16 @@ export const ctfWebhookUpdateBlogEvent = async (req: Request, res: Response, nex
 const getBlogPercentageOfCategory = async (id: string): Promise<number> => {
   // 全てのブログを取得
   const all_blogs_entries = await client.getEntries({
-    "content_type": "blog",
+    content_type: "blog",
   });
   // 指定のカテゴリのブログを取得
   const blogs_of_category_entries = await client.getEntries({
     "content_type": "blog",
     "fields.category.sys.id": id,
   });
-  return Math.floor(blogs_of_category_entries.total / all_blogs_entries.total * 100);
+  return Math.floor(
+      (blogs_of_category_entries.total / all_blogs_entries.total) * 100
+  );
 };
 
 /**

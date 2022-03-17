@@ -9,10 +9,13 @@ import admin from "firebase-admin";
  */
 export const postBlogLgtm = async (id: string): Promise<unknown> => {
   const blogRef = db.collection("blog_lgtm").doc(id);
-  const res = await blogRef.set({
-    good: 0,
-    bad: 0,
-  }, {merge: true});
+  const res = await blogRef.set(
+      {
+        good: 0,
+        bad: 0,
+      },
+      {merge: true}
+  );
   return res;
 };
 
@@ -26,22 +29,123 @@ export const postBlogLgtm = async (id: string): Promise<unknown> => {
  * @param {number} tag_percent
  * @return {unknown}
  */
-export const putBlogArchive = async (created_at: string, tag: string, monthly_count: number, tag_count: number, tag_order: number, tag_percent: number): Promise<boolean | unknown> => {
+export const putBlogArchive = async (
+    created_at: string,
+    tag: string,
+    monthly_count: number,
+    tag_count: number,
+    tag_order: number,
+    tag_percent: number
+): Promise<boolean | unknown> => {
   try {
     const archiveRef = db.collection("blog").doc("archive");
     // 月別アーカイブ
     const monthlyRef = archiveRef.collection("monthly").doc(created_at);
-    await monthlyRef.set({
-      count: monthly_count,
-    }, {merge: true});
+    await monthlyRef.set(
+        {
+          count: monthly_count,
+        },
+        {merge: true}
+    );
     // タグ別アーカイブ
     const tagRef = archiveRef.collection("tag").doc(tag);
-    await tagRef.set({
-      count: tag_count,
-      percent: tag_percent,
-      order: tag_order,
-    }, {merge: true});
+    await tagRef.set(
+        {
+          count: tag_count,
+          percent: tag_percent,
+          order: tag_order,
+        },
+        {merge: true}
+    );
     return true;
+  } catch (err) {
+    return err;
+  }
+};
+
+/**
+ *ブログのシリーズ情報の保存
+ * @param {string} tag
+ * @param {string} series
+ * @return {unknown}
+ */
+export const putBlogSeries = async (
+    tag: string,
+    series: string
+): Promise<boolean | unknown> => {
+  try {
+    const archiveRef = db.collection("blog").doc("archive");
+    // タグ別アーカイブの取得
+    const tagArchives = await getTagArchive(tag);
+    if (tagArchives) {
+      const tagRef = archiveRef.collection("tag").doc(tag);
+      let seriesArr: string[] = [];
+      if (tagArchives.series) {
+        // すでにデータがあれば何もしない
+        if ((tagArchives.series as string[]).find((v) => v === series)) {
+          return true;
+        }
+        seriesArr = (tagArchives.series as string[]).slice();
+        seriesArr.push(series);
+      } else {
+        seriesArr.push(series);
+      }
+      await tagRef.set(
+          {
+            ...tagArchives,
+            series: seriesArr,
+          },
+          {merge: true}
+      );
+      return true;
+    }
+    return false;
+  } catch (err) {
+    return err;
+  }
+};
+
+/**
+ *ブログのシリーズ情報の削除
+ * @param {string} series
+ * @return {unknown}
+ */
+export const deleteBlogSeries = async (
+    series: string
+): Promise<boolean | unknown> => {
+  try {
+    const archiveRef = db.collection("blog").doc("archive");
+    // タグ別アーカイブの取得
+    // const tagArchives = await getTagArchive(tag);
+    const tagCollection = await archiveRef
+        .collection("tag")
+        .where("series", "array-contains", series)
+        .get();
+    if (tagCollection) {
+      tagCollection.forEach(async (doc) => {
+        console.log(doc.id, " => ", JSON.stringify(doc.data()));
+        const tagData = doc.data();
+        let seriesArr: string[] = [];
+        if (tagData.series) {
+          // 一致するデータがなければ何もしない
+          if (!(tagData.series as string[]).find((v) => v === series)) {
+            return true;
+          }
+          seriesArr = (tagData.series as string[]).filter((v) => v !== series);
+        }
+        const tagRef = archiveRef.collection("tag").doc(doc.id);
+        await tagRef.set(
+            {
+              ...tagData,
+              series: seriesArr,
+            },
+            {merge: true}
+        );
+        return;
+      });
+      return true;
+    }
+    return false;
   } catch (err) {
     return err;
   }
@@ -52,7 +156,9 @@ export const putBlogArchive = async (created_at: string, tag: string, monthly_co
  * @param {string} created_at
  * @return {unknown}
  */
-export const getMonthlyArchive = async (created_at: string): Promise<null | Record<string, number>> => {
+export const getMonthlyArchive = async (
+    created_at: string
+): Promise<null | Record<string, number>> => {
   try {
     const archiveRef = db.collection("blog").doc("archive");
     // 月別アーカイブ
@@ -72,7 +178,9 @@ export const getMonthlyArchive = async (created_at: string): Promise<null | Reco
  * 全てのブログの月別アーカイブ情報の取得
  * @return {unknown}
  */
-export const getMonthlyArchives = async (): Promise<Record<string, number>[]> => {
+export const getMonthlyArchives = async (): Promise<
+  Record<string, number>[]
+> => {
   try {
     const docRef = db.collection("blog").doc("archive");
     const monthlyRef = docRef.collection("monthly");
@@ -99,7 +207,9 @@ export const getMonthlyArchives = async (): Promise<Record<string, number>[]> =>
  * @param {string} tag
  * @return {unknown}
  */
-export const getTagArchive = async (tag: string): Promise<null | Record<string, number>> => {
+export const getTagArchive = async (
+    tag: string
+): Promise<null | Record<string, number | string[]>> => {
   try {
     const archiveRef = db.collection("blog").doc("archive");
     // タグ別アーカイブ
@@ -108,7 +218,7 @@ export const getTagArchive = async (tag: string): Promise<null | Record<string, 
     if (!doc.exists) {
       return null;
     } else {
-      return doc.data() as unknown as Record<string, number>;
+      return doc.data() as unknown as Record<string, number | string[]>;
     }
   } catch (err) {
     return null;
@@ -119,7 +229,9 @@ export const getTagArchive = async (tag: string): Promise<null | Record<string, 
  * 全てのブログの月別アーカイブ情報の取得
  * @return {unknown}
  */
-export const getTagArchives = async (): Promise<Record<string, number>[]> => {
+export const getTagArchives = async (): Promise<
+  Record<string, number | string[]>[]
+> => {
   try {
     const docRef = db.collection("blog").doc("archive");
     const tagRef = docRef.collection("tag");
@@ -127,11 +239,11 @@ export const getTagArchives = async (): Promise<Record<string, number>[]> => {
     if (snapshot.empty) {
       return [];
     }
-    const arr: Record<string, number>[] = [];
+    const arr: Record<string, number | string[]>[] = [];
     snapshot.forEach((doc) => {
       if (doc.exists) {
         arr.push({
-          [doc.id]: doc.data() as unknown as number,
+          [doc.id]: doc.data() as unknown as number | string[],
         });
       }
     });
@@ -167,7 +279,11 @@ export const getBlogLgtm = async (id: string): Promise<null | BlogLgtm> => {
  * @param {number} value
  * @return {unknown}
  */
-export const putBlogLgtm = async (id: string, type: BlogLgtmType, value: number): Promise<unknown> => {
+export const putBlogLgtm = async (
+    id: string,
+    type: BlogLgtmType,
+    value: number
+): Promise<unknown> => {
   try {
     const docRef = db.collection("blog_lgtm").doc(id);
     let res;
