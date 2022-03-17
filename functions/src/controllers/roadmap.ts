@@ -4,7 +4,7 @@ import r from "../utils/response";
 import {RoadmapItem, RoadmapFields} from "../types/interface";
 import {ROADMAP_TYPE} from "../consts/config";
 
-const client = createClient();
+const client = createClient({preview: false});
 
 /**
  * ロードマップの取得

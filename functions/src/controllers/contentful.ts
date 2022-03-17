@@ -12,7 +12,7 @@ import {BlogCategory} from "../types/interface";
 import {DateTime} from "luxon";
 import r from "../utils/response";
 
-const client = createClient();
+const client = createClient({preview: false});
 
 /**
  * 記事が作成された際に呼ばれる

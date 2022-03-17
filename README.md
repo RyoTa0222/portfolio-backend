@@ -51,6 +51,7 @@ firebase login
   "contentful": {
     "space_id": SPACE_ID,
     "access_token": ACCESS_TOKEN
+    "preview_access_token": PREVIEW_ACCESS_TOKEN
   }
 }
 ```
