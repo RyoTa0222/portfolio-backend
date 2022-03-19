@@ -260,7 +260,13 @@ const getBlogContentsV2 = async (
     }
     // シリーズで絞り込みの場合
     if (series) {
-      params["fields.series.sys.id"] = series;
+      if (series === "others") {
+        // その他の場合
+        params["fields.series[exists]"] = false;
+      } else {
+        // シリーズが指定されている場合
+        params["fields.series.sys.id"] = series;
+      }
     }
     // タグで絞り込みの場合
     if (tag) {
@@ -271,7 +277,6 @@ const getBlogContentsV2 = async (
         "content_type": "blogCategory",
         "sys.id": tag,
       });
-      console.log(`ctfTagData: ${JSON.stringify(ctfTagData)}`);
       if (ctfTagData.items && ctfTagData.items.length === 0) {
         data = {contents};
         r.success(res, data);
@@ -281,23 +286,20 @@ const getBlogContentsV2 = async (
       const tagData = await getTagArchive(
         ctfTagItem.fields.categoryId as string
       );
-      console.log(`tagData: ${JSON.stringify(tagData)}`);
       // 指定のタグにシリーズ情報がある場合
       if (tagData && (tagData.series as string[]).length > 0) {
         const paramsSlice = {...params};
-        (tagData.series as string[]).forEach(async (seriesId) => {
+        for (const seriesId of tagData.series as string[]) {
           // シリーズ情報の取得
           const seriesData = await client.getEntries({
             "content_type": "blogSeries",
             "sys.id": seriesId,
           });
-          console.log(`seriesData: ${JSON.stringify(seriesData)}`);
           const seriesItem = seriesData.items[0];
           // 記事一覧情報の取得
           paramsSlice["fields.series.sys.id"] = seriesId;
           paramsSlice.limit = 4;
           const entries = await client.getEntries(paramsSlice);
-          console.log(`entries: ${JSON.stringify(entries)}`);
           contents[(seriesItem.fields as any).slug] = {
             label: (seriesItem.fields as any).name,
             contents: entries.items.map((item) => {
@@ -305,7 +307,7 @@ const getBlogContentsV2 = async (
             }),
             total: entries.total,
           };
-        });
+        }
       }
       // シリーズ情報がない場合
       const paramsSlice = {...params};
@@ -353,7 +355,7 @@ const getBlogContent = async (
     next: NextFunction
 ): Promise<void> => {
   const {id} = req.params;
-  const preview = req.query?.preview;
+  const preview = req.query.preview || undefined;
   // パラメータのチェック
   if (!id) {
     r.error400(res, "パラメータが不足しています");
