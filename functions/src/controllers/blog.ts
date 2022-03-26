@@ -425,6 +425,7 @@ const getBlogContent = async (
     );
     const data = {
       title: fields.title,
+      description: fields.description,
       image: imageObj.fields.file.url,
       created_at,
       updated_at,

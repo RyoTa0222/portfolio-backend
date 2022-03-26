@@ -11,6 +11,7 @@ import {sendMessageToSlack} from "./utils/sendToSlack";
 import portfolio from "./controllers/portfolio";
 import blog from "./controllers/blog";
 import roadmap from "./controllers/roadmap";
+import news from "./controllers/news";
 import r from "./utils/response";
 import {postNotificationFromSentryToSlack} from "./controllers/sentry";
 
@@ -67,6 +68,8 @@ app.post("/v2/blog/contents/lgtm", blog.postBlogContentsLgtm);
 app.get("/v2/blog/contents/:id", blog.getBlogContent);
 // roadmap
 app.get("/v2/roadmap", roadmap.getRoadmap);
+// news
+app.get("/v2/news", news.getNews);
 
 // webhook
 app.post("/contentful/lgtm", ctfWebhookCreateBlogEvent);
