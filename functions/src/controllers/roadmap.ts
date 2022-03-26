@@ -7,12 +7,16 @@ import {ROADMAP_TYPE} from "../consts/config";
 const client = createClient({preview: false});
 
 /**
-  * ロードマップの取得
-  * @param {Request} req
-  * @param {Response} res
-  * @param {NextFunction} next
-  */
-const getRoadmap = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+ * ロードマップの取得
+ * @param {Request} req
+ * @param {Response} res
+ * @param {NextFunction} next
+ */
+const getRoadmap = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<void> => {
   try {
     // contentfulからデータ取得
     const entries = await client.getEntries({
@@ -24,7 +28,6 @@ const getRoadmap = async (req: Request, res: Response, next: NextFunction): Prom
     const data = {schedule, develop, merge};
     if (entries && entries.items) {
       entries.items.forEach((item) => {
-        console.log(item);
         const fields = item.fields as RoadmapFields;
         if (fields.state.length > 0 && ROADMAP_TYPE.includes(fields.state[0])) {
           data[fields.state[0]].push({
@@ -40,6 +43,5 @@ const getRoadmap = async (req: Request, res: Response, next: NextFunction): Prom
     r.error500(res, (err as Error).message);
   }
 };
-
 
 export default {getRoadmap};

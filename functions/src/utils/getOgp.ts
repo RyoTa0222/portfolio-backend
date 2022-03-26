@@ -1,7 +1,9 @@
 import axios from "axios";
 import {JSDOM} from "jsdom";
 
-export const getOgp = async (url: string): Promise<Record<string, string> | null> => {
+export const getOgp = async (
+    url: string
+): Promise<Record<string, string> | null> => {
   if (typeof url !== "string") return null;
   const encodedUri = encodeURI(url);
   const headers = {"User-Agent": "bot"};
@@ -19,15 +21,21 @@ export const getOgp = async (url: string): Promise<Record<string, string> | null
 };
 
 // HTMLのmetaタグからogpを抽出
-const extractOgp = (metaElements: HTMLMetaElement[]): Record<string, string> => {
+const extractOgp = (
+    metaElements: HTMLMetaElement[]
+): Record<string, string> => {
   const ogp = metaElements
       .filter((element: Element) => element.hasAttribute("property"))
       .reduce((previous: any, current: Element) => {
-        const property = current.getAttribute("property")?.trim();
-        if (!property) return;
-        const content = current.getAttribute("content");
-        previous[property] = content;
-        return previous;
+        if (current.getAttribute("property")) {
+          const property = (current.getAttribute("property") as any).trim();
+          if (property) {
+            const content = current.getAttribute("content");
+            previous[property] = content;
+            return previous;
+          }
+          return;
+        }
       }, {});
   return ogp;
 };

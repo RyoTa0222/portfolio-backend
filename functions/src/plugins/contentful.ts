@@ -15,7 +15,7 @@ const ctfPreviewConfig: ContentfulPreviewConfig = {
 
 // https://www.contentful.com/developers/docs/references/content-delivery-api/
 const plugin = (arg: { preview: any } | undefined): ContentfulClientApi => {
-  if (arg?.preview) {
+  if (arg && arg.preview) {
     return createClient(ctfPreviewConfig);
   }
   return createClient(ctfConfig);
