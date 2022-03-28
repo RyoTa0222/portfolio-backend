@@ -31,6 +31,7 @@ const getNews = async (
       order: "-sys.createdAt",
     });
     let contents: unknown[] = [];
+    let total = 0;
     if (entries && entries.items) {
       contents = entries.items.map((entry) => {
         return {
@@ -45,9 +46,11 @@ const getNews = async (
           date: entry.fields.date,
         };
       });
+      total = entries.total;
     }
     r.success(res, {
       contents,
+      total,
     });
   } catch (err) {
     next(Object.assign(err, {function: "getNews"}));
