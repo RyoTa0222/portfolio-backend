@@ -15,7 +15,7 @@ export const getOgp = async (
     const ogp = extractOgp([...meta]);
     return ogp;
   } catch (err) {
-    if (err instanceof Error) throw new Error(err.message);
+    if (err instanceof Error) console.error(err.message);
     return null;
   }
 };
