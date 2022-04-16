@@ -157,7 +157,7 @@ const getBlogContents = async (
       order: "-sys.createdAt",
     };
     // 検索する場合
-    if (typeof search_word === "string" && search_word.length > 0) {
+    if (typeof search_word === "string" && search_word?.length > 0) {
       params.query = search_word;
     }
     // タグで絞り込み
@@ -277,7 +277,7 @@ const getBlogContentsV2 = async (
         "content_type": "blogCategory",
         "sys.id": tag,
       });
-      if (ctfTagData.items && ctfTagData.items.length === 0) {
+      if (ctfTagData.items?.length === 0) {
         data = {contents};
         r.success(res, data);
         return;
@@ -287,7 +287,7 @@ const getBlogContentsV2 = async (
         ctfTagItem.fields.categoryId as string
       );
       // 指定のタグにシリーズ情報がある場合
-      if (tagData && (tagData.series as string[]).length > 0) {
+      if (tagData && (tagData.series as string[])?.length > 0) {
         const paramsSlice = {...params};
         for (const seriesId of tagData.series as string[]) {
           // シリーズ情報の取得
