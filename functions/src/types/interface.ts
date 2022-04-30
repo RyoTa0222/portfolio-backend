@@ -37,6 +37,7 @@ export interface BlogCategory {
   categoryName: string;
   categoryId: string;
   color: string;
+  icon: string;
   priority: number;
 }
 

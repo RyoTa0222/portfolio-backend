@@ -119,6 +119,7 @@ const getBlog = async (
           label: fields.categoryName,
           color: fields.color,
           tag_id: fields.categoryId,
+          icon: fields.icon,
           id: item.sys.id,
         };
       });
@@ -439,6 +440,7 @@ const getBlogContent = async (
         label: tagFields.categoryName,
         color: tagFields.color,
         tag_id: tagFields.categoryId,
+        icon: tagFields.icon,
         id: tagObj.sys.id,
       },
     };
@@ -527,6 +529,7 @@ const formatBlogContent = (
       label: tagFields.categoryName,
       color: tagFields.color,
       tag_id: tagFields.categoryId,
+      icon: tagFields.icon,
       id: tagObj.sys.id,
     },
     image: imageObj.fields.file.url,
